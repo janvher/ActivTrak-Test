@@ -23,5 +23,14 @@ Manifest V3 extension that reports the **active tab’s domain** to the ActivTra
 2. Enable **Developer mode**
 3. **Load unpacked** → select this `chrome-extension/` folder
 4. Ensure backend is running on `http://localhost:3001`
+5. Browse sites for a few seconds each, then confirm dashboard **Source = chrome**
 
-> Note: Chrome may block extension requests to `localhost` in some setups. If events don’t appear, check the service worker console and confirm the API URL in the popup.
+> Note: Recent Chrome versions often ignore CLI `--load-extension`. Prefer Load unpacked in the browser UI.
+
+### Contract verification (no UI)
+
+```bash
+node chrome-extension/verify-ingest.mjs
+```
+
+Posts the same JSON shape as `background.js` and checks `/api/v1/events/recent` for `source: "chrome"`.

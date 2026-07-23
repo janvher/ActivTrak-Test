@@ -640,6 +640,7 @@ export default function App() {
                     <th>When</th>
                     <th>App</th>
                     <th>Window</th>
+                    <th>Source</th>
                     <th>State</th>
                     <th>Duration</th>
                     <th>Device</th>
@@ -654,6 +655,11 @@ export default function App() {
                       <td>{ev.appName}</td>
                       <td className="truncate" title={ev.windowTitle}>
                         {ev.windowTitle || '—'}
+                      </td>
+                      <td>
+                        <span className={`pill ${ev.source === 'chrome' ? 'source-chrome' : 'source-desktop'}`}>
+                          {ev.source === 'chrome' ? 'chrome' : 'desktop'}
+                        </span>
                       </td>
                       <td>
                         <span className={`pill ${ev.isIdle ? 'paused' : 'online'}`}>

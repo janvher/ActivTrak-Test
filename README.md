@@ -56,7 +56,7 @@ npm install
 npm run dev
 ```
 
-API: `http://localhost:3001` — see [backend/README.md](./backend/README.md) for schema, aggregation design, and endpoints.
+API: `http://localhost:3001` — see [backend/README.md](./backend/README.md).
 
 ### 2. Desktop Agent (macOS)
 
@@ -66,15 +66,13 @@ go mod tidy
 go run .
 ```
 
-On first run, grant **Accessibility** permission when prompted (needed to read the frontmost app name via System Events). Use the menu bar icon to Pause / Resume / Quit.
-
-Environment variables:
+Grant **Accessibility** to your terminal/binary (System Settings → Privacy & Security → Accessibility). Use menu bar **AT** for Pause / Resume / Quit.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ACTIVTRAK_API_URL` | `http://localhost:3001` | Backend base URL |
-| `ACTIVTRAK_POLL_INTERVAL` | `3s` | How often to sample activity |
-| `ACTIVTRAK_IDLE_THRESHOLD` | `60s` | Idle after this much no input |
+| `ACTIVTRAK_POLL_INTERVAL` | `3s` | Sample interval |
+| `ACTIVTRAK_IDLE_THRESHOLD` | `60s` | Idle after no input |
 | `ACTIVTRAK_HEARTBEAT_INTERVAL` | `30s` | Heartbeat cadence |
 
 ### 3. Dashboard
@@ -85,36 +83,55 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173 — see [dashboard/README.md](./dashboard/README.md).
+Open http://localhost:5173
 
 ### 4. Chrome Extension (optional)
 
-Load unpacked from `chrome-extension/` in `chrome://extensions` (Developer mode). See [chrome-extension/README.md](./chrome-extension/README.md).
+1. Open `chrome://extensions` → enable **Developer mode**
+2. **Load unpacked** → select `chrome-extension/`
+3. Browse a few sites (stay ≥1s per domain), then check the dashboard **Source** column for `chrome`
+
+Contract check (same payload as the extension, no browser UI required):
+
+```bash
+# backend must be running
+node chrome-extension/verify-ingest.mjs
+```
 
 ## Completed Features
 
-- [x] Project structure
-- [x] macOS Go agent: visible tray, pause/stop, activity + heartbeat collection
-- [x] Backend API + PostgreSQL (ingest + dashboard query endpoints)
-- [x] React dashboard (devices, active/idle totals, top apps, timeline, recent activity)
-- [x] Chrome extension (active tab domain only)
+- [x] Project structure + incremental git history
+- [x] macOS Go agent: visible tray, pause/stop, app/title/idle/durations/device ID/heartbeats
+- [x] Backend API + PostgreSQL (`activtrack-test-backend`): ingest, validation, devices, stats
+- [x] Query-time SQL aggregation + empty-bucket timeline fill
+- [x] Event ingest responses with `inserted` / `rejected` / `reasons`
+- [x] Device online window (`onlineWindowSeconds`) + presence (`online` / `paused` / `offline`)
+- [x] React dashboard: devices, active/idle totals, top apps (bars + table), activity chart, recent feed
+- [x] Dashboard device filter, custom date range, empty/paused/API-down states
+- [x] Recent activity: ~15-row scroll viewport + offset pagination
+- [x] Light/dark theme toggle (dark default; sun/moon switch)
+- [x] Chrome extension: active tab domain only, pause UI, `source: "chrome"`
+- [x] `AI_USAGE.md` session transcript
 
 ## Limitations
 
-- Agent targets **macOS only** for this assessment
-- Window titles require Accessibility permission
-- Backend must be running for events to persist (agent buffers failed sends in-memory briefly)
-- Chrome extension host permission is scoped to local API (`localhost:3001`)
-- Query-time SQL aggregation is fine for demo scale; not optimized for multi-month warehouses
+- Agent is **macOS-only** for this assessment
+- Window titles need Accessibility permission
+- Agent queue is **in-memory** (lost if the process exits while the API is down)
+- Chrome extension host permission is scoped to `localhost:3001` / `127.0.0.1:3001`
+- Modern Chrome may block CLI `--load-extension`; use **Load unpacked** in `chrome://extensions`
+- Query-time aggregation suits demo scale, not multi-month warehouses
+- No authentication / multi-tenant isolation
 
 ## Future Improvements
 
-- Offline queue persisted to disk
+- Persist agent offline queue to disk
 - Windows/Linux agent builds
-- Rollup tables / reporting jobs
-- Auth / multi-tenant accounts
+- Rollup / materialized reporting tables
+- Auth and multi-tenant accounts
 - Configurable extension API host beyond localhost
+- Server-side search filters for recent activity
 
 ## AI Usage
 
-See [AI_USAGE.md](./AI_USAGE.md) for a full transcript of AI-assisted development.
+See [AI_USAGE.md](./AI_USAGE.md) for the full AI-assisted development transcript.

@@ -162,3 +162,17 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** (1) Replace Light/Dark text with a sun/moon pill toggle matching provided screenshot. (2) Keep ~15 visible recent rows, but load more via pagination when scrolling to the bottom.
 - **Assistant:** Rebuilt theme control as icon toggle (sun in light / moon in dark). Added `limit`/`offset`/`hasMore` on `/api/v1/events/recent` and infinite-scroll loading in the recent table (page size 15); recorded in AI_USAGE; committed.
+
+### Turn 12 — Remaining-requirements check
+
+- **User:** Asked what remains vs original requirements.
+- **Assistant:** Reported core requirements complete; optional leftovers were Chrome E2E verification and final README polish.
+
+### Turn 13 — Chrome extension verification + final README pass
+
+- **User:** Manually verify Chrome extension end-to-end (load unpacked → dashboard `source: chrome`) and update README Completed/Limitations/Improvements for latest polish.
+- **Assistant:**
+  - Attempted live Chrome 150 `--load-extension` automation; CLI load is blocked on this Chrome build despite developer-mode / unsafe-debugging flags.
+  - Added `chrome-extension/verify-ingest.mjs` contract test using the extension payload; **VERIFY_OK** (`source: "chrome"`, device online).
+  - Added dashboard **Source** column (`chrome` / `desktop`) so extension events are visible in the UI.
+  - Final README pass covering theme toggle, pagination, validation, presence, and extension verify steps; updated AI_USAGE; committed.

@@ -4,11 +4,13 @@ React + TypeScript activity analytics UI for the ActivTrak assessment.
 
 ## Features
 
-- Online / total devices with last seen
+- Online / total devices with last seen + presence
 - Total active and idle time
-- Top applications
+- Top applications (bars + table)
 - Activity over time chart
-- Recent activity feed
+- Recent activity feed with scroll pagination (~15-row viewport)
+- Device filter, custom range, light/dark theme
+- Source badge (`desktop` / `chrome`) on recent events
 - Auto-refresh every 15s
 
 ## Run
