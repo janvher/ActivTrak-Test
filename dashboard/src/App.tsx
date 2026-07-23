@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -37,6 +37,7 @@ import './App.css'
 
 const DEVICE_KEY = 'activtrak.selectedDeviceId'
 const THEME_KEY = 'activtrak.theme'
+const RECENT_PAGE_SIZE = 15
 type RangeMode = '24h' | '7d' | 'custom'
 type Theme = 'dark' | 'light'
 
@@ -79,9 +80,23 @@ export default function App() {
   const [topApps, setTopApps] = useState<TopApp[]>([])
   const [timeline, setTimeline] = useState<ActivityPoint[]>([])
   const [recent, setRecent] = useState<ActivityEvent[]>([])
+  const [recentHasMore, setRecentHasMore] = useState(false)
+  const [recentLoadingMore, setRecentLoadingMore] = useState(false)
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [appQuery, setAppQuery] = useState('')
   const [idleOnly, setIdleOnly] = useState(false)
+  const recentScrollRef = useRef<HTMLDivElement | null>(null)
+  const recentLoadingRef = useRef(false)
+  const recentCountRef = useRef(0)
+  const recentHasMoreRef = useRef(false)
+
+  useEffect(() => {
+    recentCountRef.current = recent.length
+  }, [recent])
+
+  useEffect(() => {
+    recentHasMoreRef.current = recentHasMore
+  }, [recentHasMore])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -91,6 +106,31 @@ export default function App() {
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
   }
+
+  const loadRecentPage = useCallback(
+    async (offset: number, append: boolean) => {
+      if (recentLoadingRef.current) return
+      recentLoadingRef.current = true
+      if (append) setRecentLoadingMore(true)
+      try {
+        const page = await fetchRecentEvents(
+          RECENT_PAGE_SIZE,
+          deviceId || undefined,
+          offset,
+        )
+        setRecent((prev) => {
+          if (!append) return page.events
+          const seen = new Set(prev.map((e) => e.id))
+          return [...prev, ...page.events.filter((e) => !seen.has(e.id))]
+        })
+        setRecentHasMore(page.hasMore)
+      } finally {
+        recentLoadingRef.current = false
+        setRecentLoadingMore(false)
+      }
+    },
+    [deviceId],
+  )
 
   const applyPreset = (mode: RangeMode) => {
     setRangeMode(mode)
@@ -124,12 +164,11 @@ export default function App() {
       const spanMs = range.to.getTime() - range.from.getTime()
       const bucket = spanMs > 36 * 60 * 60 * 1000 ? 'day' : 'hour'
       const filter = deviceId || undefined
-      const [devicePayload, s, apps, points, events] = await Promise.all([
+      const [devicePayload, s, apps, points] = await Promise.all([
         fetchDevices(),
         fetchSummary(range, filter),
         fetchTopApps(range, filter, 10),
         fetchActivityOverTime(range, bucket, filter),
-        fetchRecentEvents(60, filter),
       ])
       setApiDown(false)
       setDevices(devicePayload.devices)
@@ -137,7 +176,6 @@ export default function App() {
       setSummary(s)
       setTopApps(apps)
       setTimeline(points)
-      setRecent(events)
       setUpdatedAt(new Date())
 
       if (
@@ -155,11 +193,27 @@ export default function App() {
     }
   }, [range, deviceId])
 
+  // Reset recent feed when device filter changes.
+  useEffect(() => {
+    setRecent([])
+    setRecentHasMore(false)
+    void loadRecentPage(0, false)
+  }, [loadRecentPage])
+
   useEffect(() => {
     void load()
     const id = window.setInterval(() => void load(), 15_000)
     return () => window.clearInterval(id)
   }, [load])
+
+  const onRecentScroll = () => {
+    const el = recentScrollRef.current
+    if (!el || !recentHasMoreRef.current || recentLoadingRef.current) return
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 48
+    if (nearBottom) {
+      void loadRecentPage(recentCountRef.current, true)
+    }
+  }
 
   const onlineCount = devices.filter((d) => d.presence === 'online' || (d.online && d.status === 'running')).length
   const pausedCount = devices.filter((d) => d.presence === 'paused' || d.status === 'paused').length
@@ -189,7 +243,17 @@ export default function App() {
     })
   }, [recent, appQuery, idleOnly])
 
-  const recentVisible = filteredRecent.slice(0, 15)
+  // If filters hide most rows, keep prefetching so the viewport can fill.
+  useEffect(() => {
+    if (
+      recentHasMore &&
+      !recentLoadingRef.current &&
+      filteredRecent.length < RECENT_PAGE_SIZE &&
+      recent.length > 0
+    ) {
+      void loadRecentPage(recentCountRef.current, true)
+    }
+  }, [filteredRecent.length, recentHasMore, recent.length, loadRecentPage])
 
   const chartTheme =
     theme === 'light'
@@ -227,12 +291,33 @@ export default function App() {
 
       <button
         type="button"
-        className="theme-toggle"
+        className={`theme-switch theme-switch--${theme}`}
         onClick={toggleTheme}
         aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
-        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       >
-        {theme === 'dark' ? 'Light' : 'Dark'}
+        <span className="theme-switch__track" aria-hidden>
+          <span className="theme-switch__icon theme-switch__icon--moon">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5Z" />
+              <circle cx="17.2" cy="7.2" r="1.1" />
+              <circle cx="19.4" cy="10.2" r="0.7" />
+            </svg>
+          </span>
+          <span className="theme-switch__icon theme-switch__icon--sun">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                fill="none"
+              />
+            </svg>
+          </span>
+          <span className="theme-switch__thumb" />
+        </span>
       </button>
 
       <header className="header glass">
@@ -293,7 +378,15 @@ export default function App() {
               Custom
             </button>
           </div>
-          <button type="button" className="primary" onClick={() => void load()} disabled={loading}>
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              void load()
+              void loadRecentPage(0, false)
+            }}
+            disabled={loading}
+          >
             Refresh
           </button>
           <span className="meta">
@@ -530,11 +623,17 @@ export default function App() {
             </label>
           </div>
         </div>
-        {recentVisible.length === 0 ? (
+        {filteredRecent.length === 0 && !recentLoadingMore ? (
           <p className="empty">No matching recent events.</p>
         ) : (
           <>
-            <div className="table-scroll" role="region" aria-label="Recent activity">
+            <div
+              className="table-scroll"
+              role="region"
+              aria-label="Recent activity"
+              ref={recentScrollRef}
+              onScroll={onRecentScroll}
+            >
               <table className="recent-table">
                 <thead>
                   <tr>
@@ -547,7 +646,7 @@ export default function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentVisible.map((ev) => (
+                  {filteredRecent.map((ev) => (
                     <tr key={ev.id}>
                       <td title={formatTime(ev.endedAt)}>
                         {formatRelative(ev.endedAt)}
@@ -567,12 +666,13 @@ export default function App() {
                   ))}
                 </tbody>
               </table>
+              {recentLoadingMore && (
+                <p className="table-loading">Loading more…</p>
+              )}
             </div>
             <p className="table-foot">
-              Showing {recentVisible.length}
-              {filteredRecent.length > 15
-                ? ` of ${filteredRecent.length} matches (max 15)`
-                : ' recent events'}
+              Showing {filteredRecent.length} loaded
+              {recentHasMore ? ' · scroll for more' : ' · end of feed'}
             </p>
           </>
         )}

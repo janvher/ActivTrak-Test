@@ -157,3 +157,8 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** Add a small top-right toggle for light/dark themes; dark is default (current look); implement light version.
 - **Assistant:** Added fixed top-right theme button, `data-theme` + `localStorage` persistence (default dark), light theme CSS tokens, and theme-aware chart colors; updated AI_USAGE; committed.
+
+### Turn 11 — Theme switch UI + recent activity pagination
+
+- **User:** (1) Replace Light/Dark text with a sun/moon pill toggle matching provided screenshot. (2) Keep ~15 visible recent rows, but load more via pagination when scrolling to the bottom.
+- **Assistant:** Rebuilt theme control as icon toggle (sun in light / moon in dark). Added `limit`/`offset`/`hasMore` on `/api/v1/events/recent` and infinite-scroll loading in the recent table (page size 15); recorded in AI_USAGE; committed.

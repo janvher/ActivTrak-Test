@@ -78,9 +78,10 @@ dashboardRouter.get("/stats/activity-over-time", async (req, res, next) => {
 dashboardRouter.get("/events/recent", async (req, res, next) => {
   try {
     const deviceId = parseDeviceId(req.query as Record<string, unknown>);
-    const limit = Math.min(Number(req.query.limit ?? 50) || 50, 200);
-    const events = await recentEvents(limit, { deviceId });
-    res.json({ events, deviceId: deviceId ?? null });
+    const limit = Math.min(Number(req.query.limit ?? 15) || 15, 100);
+    const offset = Math.max(Number(req.query.offset ?? 0) || 0, 0);
+    const page = await recentEvents(limit, { deviceId }, offset);
+    res.json({ ...page, deviceId: deviceId ?? null });
   } catch (err) {
     next(err);
   }

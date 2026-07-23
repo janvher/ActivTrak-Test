@@ -277,15 +277,23 @@ function truncateUtc(date: Date, bucket: "hour" | "day"): Date {
   );
 }
 
-export async function recentEvents(limit: number, filter: DeviceFilter = {}) {
+export async function recentEvents(
+  limit: number,
+  filter: DeviceFilter = {},
+  offset = 0,
+) {
   const params: unknown[] = [];
-  let where = "";
+  const clauses: string[] = [];
   if (filter.deviceId) {
     params.push(filter.deviceId);
-    where = `WHERE device_id = $1`;
+    clauses.push(`device_id = $${params.length}`);
   }
-  params.push(limit);
+  const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+
+  params.push(limit + 1);
   const limitPlaceholder = `$${params.length}`;
+  params.push(Math.max(0, offset));
+  const offsetPlaceholder = `$${params.length}`;
 
   const { rows } = await query<{
     id: string;
@@ -303,20 +311,29 @@ export async function recentEvents(limit: number, filter: DeviceFilter = {}) {
             started_at, ended_at, duration_ms::text, source
      FROM activity_events
      ${where}
-     ORDER BY ended_at DESC
-     LIMIT ${limitPlaceholder}`,
+     ORDER BY ended_at DESC, id DESC
+     LIMIT ${limitPlaceholder} OFFSET ${offsetPlaceholder}`,
     params,
   );
-  return rows.map((r) => ({
-    id: Number(r.id),
-    deviceId: r.device_id,
-    hostname: r.hostname,
-    appName: r.app_name,
-    windowTitle: r.window_title,
-    isIdle: r.is_idle,
-    startedAt: r.started_at,
-    endedAt: r.ended_at,
-    durationMs: Number(r.duration_ms),
-    source: r.source,
-  }));
+
+  const hasMore = rows.length > limit;
+  const page = hasMore ? rows.slice(0, limit) : rows;
+
+  return {
+    events: page.map((r) => ({
+      id: Number(r.id),
+      deviceId: r.device_id,
+      hostname: r.hostname,
+      appName: r.app_name,
+      windowTitle: r.window_title,
+      isIdle: r.is_idle,
+      startedAt: r.started_at,
+      endedAt: r.ended_at,
+      durationMs: Number(r.duration_ms),
+      source: r.source,
+    })),
+    hasMore,
+    limit,
+    offset,
+  };
 }

@@ -59,14 +59,23 @@ export async function fetchActivityOverTime(
   return data.points
 }
 
+export interface RecentPage {
+  events: ActivityEvent[]
+  hasMore: boolean
+  limit: number
+  offset: number
+  deviceId?: string | null
+}
+
 export async function fetchRecentEvents(
-  limit = 50,
+  limit = 15,
   deviceId?: string,
-): Promise<ActivityEvent[]> {
-  const params = new URLSearchParams({ limit: String(limit) })
+  offset = 0,
+): Promise<RecentPage> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  })
   if (deviceId) params.set('deviceId', deviceId)
-  const data = await getJson<{ events: ActivityEvent[] }>(
-    `/api/v1/events/recent?${params}`,
-  )
-  return data.events
+  return getJson<RecentPage>(`/api/v1/events/recent?${params}`)
 }
