@@ -1,8 +1,9 @@
 import type {
   ActivityEvent,
   ActivityPoint,
-  Device,
+  DevicesResponse,
   Summary,
+  TimeRange,
   TopApp,
 } from './types'
 
@@ -16,41 +17,56 @@ async function getJson<T>(path: string): Promise<T> {
   return res.json() as Promise<T>
 }
 
-export function rangeQuery(hours = 24): string {
-  const to = new Date()
-  const from = new Date(to.getTime() - hours * 60 * 60 * 1000)
-  return `from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`
+function qs(range: TimeRange, deviceId?: string): string {
+  const params = new URLSearchParams({
+    from: range.from.toISOString(),
+    to: range.to.toISOString(),
+  })
+  if (deviceId) params.set('deviceId', deviceId)
+  return params.toString()
 }
 
-export async function fetchDevices(): Promise<Device[]> {
-  const data = await getJson<{ devices: Device[] }>('/api/v1/devices')
-  return data.devices
+export async function fetchDevices(): Promise<DevicesResponse> {
+  return getJson<DevicesResponse>('/api/v1/devices')
 }
 
-export async function fetchSummary(hours = 24): Promise<Summary> {
-  return getJson<Summary>(`/api/v1/stats/summary?${rangeQuery(hours)}`)
+export async function fetchSummary(
+  range: TimeRange,
+  deviceId?: string,
+): Promise<Summary> {
+  return getJson<Summary>(`/api/v1/stats/summary?${qs(range, deviceId)}`)
 }
 
-export async function fetchTopApps(hours = 24, limit = 10): Promise<TopApp[]> {
+export async function fetchTopApps(
+  range: TimeRange,
+  deviceId?: string,
+  limit = 10,
+): Promise<TopApp[]> {
   const data = await getJson<{ apps: TopApp[] }>(
-    `/api/v1/stats/top-apps?${rangeQuery(hours)}&limit=${limit}`,
+    `/api/v1/stats/top-apps?${qs(range, deviceId)}&limit=${limit}`,
   )
   return data.apps
 }
 
 export async function fetchActivityOverTime(
-  hours = 24,
-  bucket: 'hour' | 'day' = 'hour',
+  range: TimeRange,
+  bucket: 'hour' | 'day',
+  deviceId?: string,
 ): Promise<ActivityPoint[]> {
   const data = await getJson<{ points: ActivityPoint[] }>(
-    `/api/v1/stats/activity-over-time?${rangeQuery(hours)}&bucket=${bucket}`,
+    `/api/v1/stats/activity-over-time?${qs(range, deviceId)}&bucket=${bucket}`,
   )
   return data.points
 }
 
-export async function fetchRecentEvents(limit = 40): Promise<ActivityEvent[]> {
+export async function fetchRecentEvents(
+  limit = 50,
+  deviceId?: string,
+): Promise<ActivityEvent[]> {
+  const params = new URLSearchParams({ limit: String(limit) })
+  if (deviceId) params.set('deviceId', deviceId)
   const data = await getJson<{ events: ActivityEvent[] }>(
-    `/api/v1/events/recent?limit=${limit}`,
+    `/api/v1/events/recent?${params}`,
   )
   return data.events
 }

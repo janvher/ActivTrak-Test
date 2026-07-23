@@ -1,3 +1,5 @@
+export type Presence = 'online' | 'paused' | 'offline' | 'stopped'
+
 export interface Device {
   deviceId: string
   hostname: string
@@ -5,6 +7,13 @@ export interface Device {
   lastSeenAt: string | null
   createdAt: string
   online: boolean
+  presence?: Presence
+}
+
+export interface DevicesResponse {
+  devices: Device[]
+  onlineWindowMs: number
+  onlineWindowSeconds: number
 }
 
 export interface Summary {
@@ -14,6 +23,7 @@ export interface Summary {
   deviceCount: number
   from: string
   to: string
+  deviceId?: string | null
 }
 
 export interface TopApp {
@@ -40,4 +50,9 @@ export interface ActivityEvent {
   endedAt: string
   durationMs: number
   source: string
+}
+
+export interface TimeRange {
+  from: Date
+  to: Date
 }

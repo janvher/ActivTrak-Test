@@ -75,6 +75,17 @@ curl -s http://localhost:3001/api/v1/health
 
 With the desktop agent running (`go run .` in `desktop-agent`), pending events should flush successfully.
 
+Optional env:
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `ONLINE_WINDOW_MS` | `120000` | Device considered fresh/online |
+| `MAX_WINDOW_TITLE_LENGTH` | `500` | Truncate window titles |
+| `MAX_DURATION_MS` | `86400000` | Reject longer segments |
+| `MAX_CLOCK_SKEW_MS` | `300000` | Reject far-future timestamps |
+
+Stats endpoints accept optional `deviceId`. Activity-over-time zero-fills empty buckets. Event ingest returns `inserted` / `rejected` / `reasons`.
+
 ## Scripts
 
 | Script | Description |
@@ -83,3 +94,4 @@ With the desktop agent running (`go run .` in `desktop-agent`), pending events s
 | `npm run build` | Compile to `dist/` |
 | `npm start` | Run compiled server |
 | `npm run migrate` | Apply schema only |
+| `npm test` | Unit tests |

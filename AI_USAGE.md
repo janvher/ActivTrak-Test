@@ -105,3 +105,45 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** Proceed with remaining full backend/frontend implementation after the rename push.
 - **Assistant:** Built React+TS Vite dashboard (devices, summary, top apps, activity chart, recent feed); added optional MV3 Chrome extension (active domain only, pause UI); updated README/AI_USAGE; committed and pushed.
+
+### Turn 6 — Backend/frontend improvement recommendations (pre-extension polish)
+
+- **User:** Before optional extension work, provide 10 best recommendations to add/change on backend and frontend (dashboard). Recommendations must stay aligned with requirements and not exceed overall limitations; user will pick what to implement.
+- **Assistant:** Proposed 10 scoped recommendations (no implementation yet):
+
+  **Backend**
+  1. Filter stats by optional `deviceId` on summary / top-apps / activity-over-time / recent events.
+  2. Clearer ingest responses (`inserted`, reject bad/overlapping segments) so charts aren’t skewed.
+  3. Validation hardening: max window-title length, sane duration bounds, reject future-dated timestamps.
+  4. Expose/document `onlineWindowSeconds` so dashboard “online” matches heartbeat cadence.
+  5. Activity-over-time empty-bucket fill so chart gaps don’t look like missing data.
+
+  **Frontend (dashboard)**
+  6. Device selector + deep link / `localStorage` (pairs with #1).
+  7. Clearer empty/offline/paused states using heartbeat `status`.
+  8. Custom from/to time range plus exact range shown in header.
+  9. Top apps horizontal bar + table for scannability.
+  10. Recent activity search/filter, idle-only toggle, relative time + absolute tooltip.
+
+  Shortlist suggested for max assessment impact: **#1 + #6**, **#7**, **#5**, **#10**. Awaiting user picks.
+
+### Turn 7 — Audit reminder for AI_USAGE.md
+
+- **User:** Asked to record the recommendations discussion in `AI_USAGE.md` because everything should be audited.
+- **Assistant:** Appended Turns 6–7 to this transcript.
+
+### Turn 8 — Implement selected recommendations + dashboard polish
+
+- **User:** Implement recommendations **2, 3, 4, 5, 6, 7, 8, 9, 10** (skipping #1 explicitly, but #6 requires device filter so backend `deviceId` filtering was included). Also polish dashboard with soft futuristic gradients without harming visibility/UX.
+- **Assistant:**
+  - **#2** Ingest returns `inserted` / `rejected` / `reasons` (207 when partial).
+  - **#3** Stricter Zod validation (duration vs timestamps, max duration, clock skew, title length truncate, batch duplicates).
+  - **#4** `onlineWindowMs` / `onlineWindowSeconds` on `/devices` + `presence` labels.
+  - **#5** Activity-over-time empty-bucket fill (UTC hour/day).
+  - **#6** Device selector + `localStorage` + clickable device rows; API `deviceId` filter on stats/events.
+  - **#7** API-down / no-devices / paused banners; presence pills (online/paused/offline).
+  - **#8** 24h / 7d / custom from–to with exact range shown in header.
+  - **#9** Top-apps horizontal bars + table.
+  - **#10** Recent search, idle-only toggle, relative time + absolute tooltip.
+  - Visual polish: soft cyan glass panels, grid/glow background, Outfit type, high-contrast dark theme (not neon-harsh).
+  - Updated `AI_USAGE.md`; committed and pushed.

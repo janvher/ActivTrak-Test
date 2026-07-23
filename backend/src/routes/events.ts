@@ -1,18 +1,42 @@
 import { Router } from "express";
-import { eventsBatchSchema } from "../types.js";
 import { insertEvents } from "../services/activity.js";
+import { eventsBatchSchema, parseActivityEvents } from "../types.js";
 
 export const eventsRouter = Router();
 
 eventsRouter.post("/", async (req, res, next) => {
   try {
-    const parsed = eventsBatchSchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: "invalid payload", details: parsed.error.flatten() });
+    const batch = eventsBatchSchema.safeParse(req.body);
+    if (!batch.success) {
+      res.status(400).json({
+        ok: false,
+        error: "invalid payload",
+        inserted: 0,
+        rejected: Array.isArray(req.body?.events) ? req.body.events.length : 0,
+        details: batch.error.flatten(),
+      });
       return;
     }
-    const inserted = await insertEvents(parsed.data.events);
-    res.status(201).json({ ok: true, inserted });
+
+    const { accepted, rejected } = parseActivityEvents(batch.data.events);
+    if (accepted.length === 0) {
+      res.status(400).json({
+        ok: false,
+        error: "all events rejected",
+        inserted: 0,
+        rejected: rejected.length,
+        reasons: rejected,
+      });
+      return;
+    }
+
+    const inserted = await insertEvents(accepted);
+    res.status(rejected.length ? 207 : 201).json({
+      ok: true,
+      inserted,
+      rejected: rejected.length,
+      reasons: rejected.length ? rejected : undefined,
+    });
   } catch (err) {
     next(err);
   }
