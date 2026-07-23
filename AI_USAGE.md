@@ -147,3 +147,8 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
   - **#10** Recent search, idle-only toggle, relative time + absolute tooltip.
   - Visual polish: soft cyan glass panels, grid/glow background, Outfit type, high-contrast dark theme (not neon-harsh).
   - Updated `AI_USAGE.md`; committed and pushed.
+
+### Turn 9 — Recent activity scrollable table (max 15)
+
+- **User:** Instead of full-page scrolling for all recent acts, make the table scrollable with a maximum of 15 entries displayed.
+- **Assistant:** Capped recent activity to 15 rows, wrapped in a fixed-height scroll region with sticky header, and added a short “Showing N…” footer; recorded in AI_USAGE.

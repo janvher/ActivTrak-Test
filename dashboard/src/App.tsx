@@ -168,6 +168,8 @@ export default function App() {
     })
   }, [recent, appQuery, idleOnly])
 
+  const recentVisible = filteredRecent.slice(0, 15)
+
   const emptyReason = (() => {
     if (apiDown) return 'api'
     if (devices.length === 0) return 'no-devices'
@@ -477,41 +479,51 @@ export default function App() {
             </label>
           </div>
         </div>
-        {filteredRecent.length === 0 ? (
+        {recentVisible.length === 0 ? (
           <p className="empty">No matching recent events.</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>App</th>
-                <th>Window</th>
-                <th>State</th>
-                <th>Duration</th>
-                <th>Device</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredRecent.map((ev) => (
-                <tr key={ev.id}>
-                  <td title={formatTime(ev.endedAt)}>
-                    {formatRelative(ev.endedAt)}
-                  </td>
-                  <td>{ev.appName}</td>
-                  <td className="truncate" title={ev.windowTitle}>
-                    {ev.windowTitle || '—'}
-                  </td>
-                  <td>
-                    <span className={`pill ${ev.isIdle ? 'paused' : 'online'}`}>
-                      {ev.isIdle ? 'Idle' : 'Active'}
-                    </span>
-                  </td>
-                  <td>{formatDuration(ev.durationMs)}</td>
-                  <td>{ev.hostname}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <>
+            <div className="table-scroll" role="region" aria-label="Recent activity">
+              <table className="recent-table">
+                <thead>
+                  <tr>
+                    <th>When</th>
+                    <th>App</th>
+                    <th>Window</th>
+                    <th>State</th>
+                    <th>Duration</th>
+                    <th>Device</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentVisible.map((ev) => (
+                    <tr key={ev.id}>
+                      <td title={formatTime(ev.endedAt)}>
+                        {formatRelative(ev.endedAt)}
+                      </td>
+                      <td>{ev.appName}</td>
+                      <td className="truncate" title={ev.windowTitle}>
+                        {ev.windowTitle || '—'}
+                      </td>
+                      <td>
+                        <span className={`pill ${ev.isIdle ? 'paused' : 'online'}`}>
+                          {ev.isIdle ? 'Idle' : 'Active'}
+                        </span>
+                      </td>
+                      <td>{formatDuration(ev.durationMs)}</td>
+                      <td>{ev.hostname}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="table-foot">
+              Showing {recentVisible.length}
+              {filteredRecent.length > 15
+                ? ` of ${filteredRecent.length} matches (max 15)`
+                : ' recent events'}
+            </p>
+          </>
         )}
       </section>
     </div>
