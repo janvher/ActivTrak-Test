@@ -85,3 +85,8 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** Scaffold repo; build macOS Go agent first with visible pause/stop and required telemetry fields.
 - **Assistant:** Created structure, README, AI_USAGE.md; implemented Go agent packages (`config`, `device`, `collector`, `sender`, `ui`) and `main.go`; committed.
+
+### Turn 2 — Agent test results + Backend API
+
+- **User:** Shared terminal logs from `go run .` showing successful collection (Cursor, System Settings, Chrome, etc.) and expected `connection refused` to `localhost:3001` (backend not yet built).
+- **Assistant:** Confirmed agent health; implemented Node.js + TypeScript backend with PostgreSQL (Docker Compose), schema (`devices`, `activity_events`, `heartbeats`), ingest endpoints matching the agent, and dashboard query APIs with SQL aggregations; started Postgres + API and smoke-tested; updated README / AI_USAGE; committed.

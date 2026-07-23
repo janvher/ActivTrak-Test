@@ -31,8 +31,8 @@ A technical assessment project: an ethical, transparent activity analytics platf
 
 | Component | Stack | Status |
 |-----------|-------|--------|
-| Desktop Agent | Go (macOS menu bar) | In progress |
-| Backend API | Node.js + TypeScript + PostgreSQL | Planned |
+| Desktop Agent | Go (macOS menu bar) | Done |
+| Backend API | Node.js + TypeScript + PostgreSQL | Done |
 | Dashboard | React + TypeScript | Planned |
 | Chrome Extension | JavaScript (MV3) | Optional |
 
@@ -44,7 +44,19 @@ A technical assessment project: an ethical, transparent activity analytics platf
 
 ## Quick Start
 
-### Desktop Agent (macOS)
+### 1. PostgreSQL + Backend API
+
+```bash
+cd backend
+docker compose up -d
+cp .env.example .env   # if needed
+npm install
+npm run dev
+```
+
+API: `http://localhost:3001` — see [backend/README.md](./backend/README.md) for schema, aggregation design, and endpoints.
+
+### 2. Desktop Agent (macOS)
 
 ```bash
 cd desktop-agent
@@ -63,15 +75,15 @@ Environment variables:
 | `ACTIVTRAK_IDLE_THRESHOLD` | `60s` | Idle after this much no input |
 | `ACTIVTRAK_HEARTBEAT_INTERVAL` | `30s` | Heartbeat cadence |
 
-### Backend / Dashboard
+### 3. Dashboard
 
-*(Setup instructions will be added as those components are built.)*
+*(Coming next.)*
 
 ## Completed Features
 
 - [x] Project structure
 - [x] macOS Go agent: visible tray, pause/stop, activity + heartbeat collection
-- [ ] Backend API + PostgreSQL
+- [x] Backend API + PostgreSQL (ingest + dashboard query endpoints)
 - [ ] React dashboard
 - [ ] Chrome extension (optional)
 
