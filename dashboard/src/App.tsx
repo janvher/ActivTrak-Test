@@ -189,6 +189,8 @@ export default function App() {
     })
   }, [recent, appQuery, idleOnly])
 
+  const recentVisible = filteredRecent.slice(0, 15)
+
   const chartTheme =
     theme === 'light'
       ? {
