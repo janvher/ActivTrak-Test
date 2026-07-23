@@ -1,0 +1,17 @@
+.DS_Store
+*.exe
+*.test
+*.out
+.env
+.env.local
+node_modules/
+dist/
+build/
+coverage/
+*.log
+desktop-agent/activtrak-agent
+backend/node_modules/
+dashboard/node_modules/
+dashboard/dist/
+.idea/
+.vscode/
