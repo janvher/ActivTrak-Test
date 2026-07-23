@@ -49,7 +49,7 @@ Query params for stats: `from`, `to` (ISO timestamps; default last 24h).
 
 ```bash
 cd backend
-docker compose up -d
+docker compose up -d   # starts container activtrack-test-backend
 ```
 
 ### 2. Install & configure

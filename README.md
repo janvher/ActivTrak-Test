@@ -48,7 +48,7 @@ A technical assessment project: an ethical, transparent activity analytics platf
 
 ```bash
 cd backend
-docker compose up -d
+docker compose up -d   # container: activtrack-test-backend
 cp .env.example .env   # if needed
 npm install
 npm run dev

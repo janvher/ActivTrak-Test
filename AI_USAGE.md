@@ -90,3 +90,13 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** Shared terminal logs from `go run .` showing successful collection (Cursor, System Settings, Chrome, etc.) and expected `connection refused` to `localhost:3001` (backend not yet built).
 - **Assistant:** Confirmed agent health; implemented Node.js + TypeScript backend with PostgreSQL (Docker Compose), schema (`devices`, `activity_events`, `heartbeats`), ingest endpoints matching the agent, and dashboard query APIs with SQL aggregations; started Postgres + API and smoke-tested; updated README / AI_USAGE; committed.
+
+### Turn 3 — Browser 404 clarification + root route
+
+- **User:** Shared agent logs and browser console 404 on `GET http://localhost:3001/` plus Chrome DevTools CSP noise.
+- **Assistant:** Confirmed agent→API ingest working; explained `/` is API-only; added friendly JSON root response; committed.
+
+### Turn 4 — Rename Docker DB container + initial push
+
+- **User:** Rename Docker DB instance to `activtrack-test-backend`, commit and push as initial push, then continue full backend/frontend implementation.
+- **Assistant:** Renamed `container_name` in `docker-compose.yml`, updated docs, recreated container, committed, pushed to `origin/master`.

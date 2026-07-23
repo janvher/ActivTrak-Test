@@ -1,7 +1,9 @@
+name: activtrack-test-backend
+
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: activtrak-postgres
+    container_name: activtrack-test-backend
     environment:
       POSTGRES_USER: activtrak
       POSTGRES_PASSWORD: activtrak
