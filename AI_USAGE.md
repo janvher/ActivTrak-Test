@@ -152,3 +152,8 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 
 - **User:** Instead of full-page scrolling for all recent acts, make the table scrollable with a maximum of 15 entries displayed.
 - **Assistant:** Capped recent activity to 15 rows, wrapped in a fixed-height scroll region with sticky header, and added a short “Showing N…” footer; recorded in AI_USAGE.
+
+### Turn 10 — Light/dark theme toggle
+
+- **User:** Add a small top-right toggle for light/dark themes; dark is default (current look); implement light version.
+- **Assistant:** Added fixed top-right theme button, `data-theme` + `localStorage` persistence (default dark), light theme CSS tokens, and theme-aware chart colors; updated AI_USAGE; committed.

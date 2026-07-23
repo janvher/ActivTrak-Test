@@ -36,7 +36,14 @@ import {
 import './App.css'
 
 const DEVICE_KEY = 'activtrak.selectedDeviceId'
+const THEME_KEY = 'activtrak.theme'
 type RangeMode = '24h' | '7d' | 'custom'
+type Theme = 'dark' | 'light'
+
+function readTheme(): Theme {
+  const stored = localStorage.getItem(THEME_KEY)
+  return stored === 'light' ? 'light' : 'dark'
+}
 
 function defaultRange(mode: RangeMode): TimeRange {
   const to = new Date()
@@ -47,6 +54,11 @@ function defaultRange(mode: RangeMode): TimeRange {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const initial = readTheme()
+    document.documentElement.setAttribute('data-theme', initial)
+    return initial
+  })
   const [rangeMode, setRangeMode] = useState<RangeMode>('24h')
   const [range, setRange] = useState<TimeRange>(() => defaultRange('24h'))
   const [customFrom, setCustomFrom] = useState(() =>
@@ -70,6 +82,15 @@ export default function App() {
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
   const [appQuery, setAppQuery] = useState('')
   const [idleOnly, setIdleOnly] = useState(false)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem(THEME_KEY, theme)
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
+  }
 
   const applyPreset = (mode: RangeMode) => {
     setRangeMode(mode)
@@ -168,7 +189,24 @@ export default function App() {
     })
   }, [recent, appQuery, idleOnly])
 
-  const recentVisible = filteredRecent.slice(0, 15)
+  const chartTheme =
+    theme === 'light'
+      ? {
+          grid: 'rgba(100, 116, 139, 0.25)',
+          tick: '#64748b',
+          active: '#0e7490',
+          idle: '#94a3b8',
+          tooltipBg: '#ffffff',
+          tooltipBorder: 'rgba(14, 116, 144, 0.25)',
+        }
+      : {
+          grid: 'rgba(148, 163, 184, 0.25)',
+          tick: '#94a3b8',
+          active: '#22d3ee',
+          idle: '#64748b',
+          tooltipBg: '#0f172a',
+          tooltipBorder: 'rgba(56, 189, 248, 0.35)',
+        }
 
   const emptyReason = (() => {
     if (apiDown) return 'api'
@@ -184,6 +222,16 @@ export default function App() {
     <div className="page">
       <div className="bg-glow" aria-hidden />
       <div className="bg-grid" aria-hidden />
+
+      <button
+        type="button"
+        className="theme-toggle"
+        onClick={toggleTheme}
+        aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+        title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+      >
+        {theme === 'dark' ? 'Light' : 'Dark'}
+      </button>
 
       <header className="header glass">
         <div>
@@ -432,27 +480,28 @@ export default function App() {
           <div className="chart">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: chartTheme.tick }} />
                 <YAxis
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
+                  tick={{ fontSize: 11, fill: chartTheme.tick }}
                   label={{
                     value: 'minutes',
                     angle: -90,
                     position: 'insideLeft',
-                    style: { fontSize: 11, fill: '#94a3b8' },
+                    style: { fontSize: 11, fill: chartTheme.tick },
                   }}
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#0f172a',
-                    border: '1px solid rgba(56,189,248,0.35)',
+                    background: chartTheme.tooltipBg,
+                    border: `1px solid ${chartTheme.tooltipBorder}`,
                     borderRadius: 10,
+                    color: theme === 'light' ? '#0f172a' : '#e8eef8',
                   }}
                 />
                 <Legend />
-                <Bar dataKey="activeMin" name="Active (min)" fill="#22d3ee" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="idleMin" name="Idle (min)" fill="#64748b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="activeMin" name="Active (min)" fill={chartTheme.active} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="idleMin" name="Idle (min)" fill={chartTheme.idle} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
