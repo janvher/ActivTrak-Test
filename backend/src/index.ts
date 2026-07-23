@@ -14,6 +14,15 @@ async function main() {
   app.use(cors({ origin: config.corsOrigin }));
   app.use(express.json({ limit: "1mb" }));
 
+  app.get("/", (_req, res) => {
+    res.json({
+      service: "activtrak-backend",
+      message: "API only — use /api/v1/* (dashboard UI comes next)",
+      health: "/api/v1/health",
+      docs: "See backend/README.md",
+    });
+  });
+
   app.get("/api/v1/health", async (_req, res) => {
     try {
       await pool.query("SELECT 1");
