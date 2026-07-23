@@ -99,4 +99,9 @@ Build a complete ActivTrak-like activity analytics platform as a technical asses
 ### Turn 4 — Rename Docker DB container + initial push
 
 - **User:** Rename Docker DB instance to `activtrack-test-backend`, commit and push as initial push, then continue full backend/frontend implementation.
-- **Assistant:** Renamed `container_name` in `docker-compose.yml`, updated docs, recreated container, committed, pushed to `origin/master`.
+- **Assistant:** Renamed Compose project + `container_name` to `activtrack-test-backend`, updated docs, recreated container, committed, pushed `master` to `origin` (SSH).
+
+### Turn 5 — Dashboard + Chrome extension
+
+- **User:** Proceed with remaining full backend/frontend implementation after the rename push.
+- **Assistant:** Built React+TS Vite dashboard (devices, summary, top apps, activity chart, recent feed); added optional MV3 Chrome extension (active domain only, pause UI); updated README/AI_USAGE; committed and pushed.

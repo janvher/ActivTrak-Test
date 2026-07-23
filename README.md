@@ -7,16 +7,17 @@ A technical assessment project: an ethical, transparent activity analytics platf
 ```
 ┌─────────────────┐     HTTP/JSON      ┌──────────────────┐     SQL      ┌────────────┐
 │  Desktop Agent  │ ─────────────────► │  Backend API     │ ──────────► │ PostgreSQL │
-│  (Go, macOS)    │   events +         │  (Node + TS)     │             └────────────┘
-│  Visible tray   │   heartbeats       │                  │
-└─────────────────┘                    └────────┬─────────┘
-                                                │
-┌─────────────────┐                             │ REST
+│  (Go, macOS)    │   events +         │  (Node + TS)     │             │ container: │
+│  Visible tray   │   heartbeats       │  :3001           │             │ activtrack │
+└─────────────────┘                    └────────┬─────────┘             │ -test-     │
+                                                │                       │ backend    │
+┌─────────────────┐                             │ REST                  └────────────┘
 │ Chrome Extension│ ────────────────────────────┤
-│ (optional)      │                             ▼
+│ (optional, MV3) │                             ▼
 └─────────────────┘                    ┌──────────────────┐
                                        │  Dashboard       │
                                        │  (React + TS)    │
+                                       │  :5173           │
                                        └──────────────────┘
 ```
 
@@ -33,13 +34,14 @@ A technical assessment project: an ethical, transparent activity analytics platf
 |-----------|-------|--------|
 | Desktop Agent | Go (macOS menu bar) | Done |
 | Backend API | Node.js + TypeScript + PostgreSQL | Done |
-| Dashboard | React + TypeScript | Planned |
-| Chrome Extension | JavaScript (MV3) | Optional |
+| Dashboard | React + TypeScript (Vite) | Done |
+| Chrome Extension | JavaScript (MV3) | Done (optional) |
 
 ## Privacy Constraints (enforced by design)
 
 - **No** keylogging, camera/mic access, file monitoring, or browser history import
 - Agent has a **visible** menu bar UI; user can **Pause** and **Quit** at any time
+- Extension tracks **active tab domain only** with Pause in the popup
 - Collects only: foreground app, window title, active/idle state, timestamps, durations, device ID, heartbeats
 
 ## Quick Start
@@ -48,7 +50,7 @@ A technical assessment project: an ethical, transparent activity analytics platf
 
 ```bash
 cd backend
-docker compose up -d   # container: activtrack-test-backend
+docker compose up -d   # container/project: activtrack-test-backend
 cp .env.example .env   # if needed
 npm install
 npm run dev
@@ -77,28 +79,41 @@ Environment variables:
 
 ### 3. Dashboard
 
-*(Coming next.)*
+```bash
+cd dashboard
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 — see [dashboard/README.md](./dashboard/README.md).
+
+### 4. Chrome Extension (optional)
+
+Load unpacked from `chrome-extension/` in `chrome://extensions` (Developer mode). See [chrome-extension/README.md](./chrome-extension/README.md).
 
 ## Completed Features
 
 - [x] Project structure
 - [x] macOS Go agent: visible tray, pause/stop, activity + heartbeat collection
 - [x] Backend API + PostgreSQL (ingest + dashboard query endpoints)
-- [ ] React dashboard
-- [ ] Chrome extension (optional)
+- [x] React dashboard (devices, active/idle totals, top apps, timeline, recent activity)
+- [x] Chrome extension (active tab domain only)
 
 ## Limitations
 
 - Agent targets **macOS only** for this assessment
 - Window titles require Accessibility permission
 - Backend must be running for events to persist (agent buffers failed sends in-memory briefly)
+- Chrome extension host permission is scoped to local API (`localhost:3001`)
+- Query-time SQL aggregation is fine for demo scale; not optimized for multi-month warehouses
 
 ## Future Improvements
 
 - Offline queue persisted to disk
 - Windows/Linux agent builds
-- Aggregations and reporting jobs
+- Rollup tables / reporting jobs
 - Auth / multi-tenant accounts
+- Configurable extension API host beyond localhost
 
 ## AI Usage
 
